@@ -1,0 +1,29 @@
+div.paginator p, div.paginator ul.pagination {
+	line-height: 1.2em;
+}
+div.paginator p {
+	text-align: left;
+	margin-bottom: 0;
+}
+
+table.results_set {
+	 border-collapse: collapse;
+}
+table.results_set thead th.actions {
+	text-align: center;
+}
+/*table.results_set thead th.actions {
+	max-width: 3em;
+	background: yellow;
+}
+table.results_set tbody td.action {
+	max-width: 3em;
+	background: yellow;
+}*/
+table.results_set tbody td.action a {
+	display: block;
+}
+table.results_set tbody td.data.datetime {
+	white-space: pre;
+	overflow: hidden;
+}
