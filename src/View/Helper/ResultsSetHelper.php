@@ -18,10 +18,15 @@ use Cake\View\StringTemplateTrait;
  *			'name',
  *			'created',
  *			'modified',
- *			'/Groups/view/{{id}}',
- *			'/Groups/edit/{{id}}',
+ *			'/Groups/view/{{id}}' => [
+ *				'title' => __('View group « {{name}} » (# {{id}})')
+ *			],
+ *			'/Groups/edit/{{id}}' => [
+ *				'title' => __('Edit group « {{name}} » (# {{id}})')
+ *			],
  *			'/Groups/delete/{{id}}' => [
  *				'type' => 'post',
+ *				'title' => __('Delete group « {{name}} » (# {{id}})'),
  *				'confirm' => __('Are you sure you want to delete the group « {{name}} » (# {{id}})?')
  *			],
  *		]
@@ -31,11 +36,11 @@ class ResultsSetHelper extends Helper
 {
 	use StringTemplateTrait;
 
-	const CELL_LINK = 'link';
-	const CELL_DATA = 'data';
+	const CELL_TYPE_LINK = 'link';
+	const CELL_TYPE_DATA = 'data';
 
-	const LINK_A = 'a';
-	const LINK_POST = 'post';
+	const LINK_TYPE_GET = 'href';
+	const LINK_TYPE_POST = 'post';
 
     public $helpers = [
 //		'Url',
@@ -53,14 +58,13 @@ class ResultsSetHelper extends Helper
     protected $_defaultConfig = [
         'options' => [],
         'templates' => [
-            'table' => '<table class="results_set">{{thead}}{{tfoot}}{{tbody}}</table>',
+            'table' => '<table class="results_set">{{thead}}{{tbody}}</table>',
             'thead' => '<thead>{{theadRows}}</thead>',
 			'theadRows' => '<tr>{{theadCells}}</tr>',
 			'theadCell' => '<th>{{theadCell}}</th>',
 			'theadActionCell' => '<th class="actions" colspan="{{count}}">{{message}}</th>',
 			'tbody' => '<tbody>{{tbodyRows}}</tbody>',
 			'tbodyRows' => '<tr>{{tbodyCells}}</tr>',
-			//TODO: classes (data type null|true|false|positiove|negative|future|past|today)
 			'tbodyDataCell' => '<td class="data {{type}} {{extra}}">{{data}}</td>',
 			'tbodyLinkCell' => '<td class="action {{extra}}">{{link}}</td>',
 			'index' => '<div class="index {{model}}">{{pagination}}{{table}}{{pagination}}</div>',
@@ -72,7 +76,26 @@ class ResultsSetHelper extends Helper
         ]
     ];
 
-	// INFO: uniquement celles qui se trouvent à la fin
+
+	/**
+	 *
+	 * @var array
+	 */
+	protected $_paramsDefaults = [
+		'tbodyLinkCell' => [
+			'extra' => true,
+			'title' => true,
+			'confirm' => false,
+			'type' => self::LINK_TYPE_GET
+		]
+	];
+
+	/**
+	 * Returns an array of actions that are only at the end of the paths.
+	 *
+	 * @param array $paths
+	 * @return array
+	 */
 	protected function _actionCells(array $paths)
 	{
 		$result = [];
@@ -81,7 +104,7 @@ class ResultsSetHelper extends Helper
 		$paths = array_reverse(array_keys(Hash::normalize($paths)));
 		foreach($paths as $path) {
 			if($done === false) {
-				if($this->cellType($path) === self::CELL_LINK) {
+				if($this->cellType($path) === self::CELL_TYPE_LINK) {
 					$result[] = $path;
 				} else {
 					$done = true;
@@ -92,12 +115,18 @@ class ResultsSetHelper extends Helper
 		return array_reverse($result);
 	}
 
-	//@todo actions cell (theadCell)
+	/**
+	 *
+	 * @todo actions cell (theadCell)
+	 *
+	 * @param array $paths
+	 * @return string
+	 */
 	public function thead(array $paths)
 	{
 		$theadCells = '';
 		foreach(Hash::normalize($paths) as $path => $fieldParams) {
-			if ($this->cellType($path) === self::CELL_DATA) {
+			if ($this->cellType($path) === self::CELL_TYPE_DATA) {
 				$theadCell = $this->Paginator->sort($path, (array)$fieldParams);
 				$theadCells .= $this->templater()->format('theadCell', ['theadCell' => $theadCell])."\n";
 			}
@@ -119,10 +148,16 @@ class ResultsSetHelper extends Helper
 		return $this->templater()->format('thead', ['theadRows' => $theadRows]);
 	}
 
-	// INFO paramètre pour désactiver les extra ($fieldParams['extra'])
-	public function tbodyDataCell(Entity $result, $path, array $fieldParams = array())
+	/**
+	 *
+	 * @param Entity $result
+	 * @param string $path
+	 * @param array $fieldParams Set "extra" key to false to disable extra info
+	 * @return string
+	 */
+	public function tbodyDataCell(Entity $result, $path, array $fieldParams = [])
 	{
-		$addExtra = false === isset($fieldParams['extra']) && !empty($fieldParams['extra']);
+		$addExtra = false === isset($fieldParams['extra']) || !empty($fieldParams['extra']);
 
 		return $this->templater()->format(
 			'tbodyDataCell',
@@ -134,6 +169,14 @@ class ResultsSetHelper extends Helper
 		)."\n";
 	}
 
+	/**
+	 * Utility function to translate a string with values from the entity using
+	 * the templater.
+	 *
+	 * @param Entity $result
+	 * @param string $string
+	 * @return string
+	 */
 	protected function _translate(Entity $result, $string)
 	{
 		$this->templater()->remove('_link');
@@ -155,6 +198,7 @@ class ResultsSetHelper extends Helper
 		$url = $this->_translate($result, $path);
 
 		if (preg_match('/^\/(?<controller>[^\/]+)\/(?<action>[^\/]+)\/(?<extra>.*)$/', $url, $matches)) {
+			// TODO: ?&=
 			$url = ['plugin' => null, 'controller' => $matches['controller'], 'action' => $matches['action']] + explode('/', $matches['extra']);
 		} else {
 			$url = $path;
@@ -164,8 +208,28 @@ class ResultsSetHelper extends Helper
 		return $url;
 	}
 
-	public function tbodyLinkCell(Entity $result, $path, array $fieldParams = array())
+	/**
+	 * Returns params + defaults in _paramsDefaults using key.
+	 *
+	 * @param string $key
+	 * @param array $params
+	 * @return array
+	 */
+	protected function _params($key, array $params = [])
 	{
+		return $params + (array)$this->_paramsDefaults[$key];
+	}
+
+	/**
+	 *
+	 * @param Entity $result
+	 * @param string $path
+	 * @param array $params
+	 * @return string
+	 */
+	public function tbodyLinkCell(Entity $result, $path, array $params = [])
+	{
+//		debug($this->_params(__FUNCTION__, $params));
 		// TODO: pre process, + headers
 		/*/* @todo <th class="actions"><?= __('Actions') ?></th> +*/
 		/*<td class="actions">
@@ -176,46 +240,64 @@ class ResultsSetHelper extends Helper
 
 		$url = $this->_link($result, $path);
 		$text = is_array($url) ? __(Inflector::camelize($url['action'])) : $url;
-		$type = Hash::get( $fieldParams, 'type' ) === self::LINK_POST ? self::LINK_POST : self::LINK_A;
-		unset($fieldParams['type']);
-		$addExtra = false === isset($fieldParams['extra']) && !empty($fieldParams['extra']);
+		$type = Hash::get( $params, 'type' ) === self::LINK_TYPE_POST ? self::LINK_TYPE_POST : self::LINK_TYPE_GET;
+		unset($params['type']);
+		$addExtra = false === isset($params['extra']) || !empty($params['extra']);
 
-		if(isset($fieldParams['confirm'])) {
-			$fieldParams['confirm'] = $this->_translate($result, $fieldParams['confirm']);
+		foreach(['confirm', 'title'] as $key) {
+			if(isset($params[$key])) {
+				$params[$key] = $this->_translate($result, $params[$key]);
+			}
 		}
 
 		return $this->templater()->format(
 			'tbodyLinkCell',
 			[
-				'link' => $type === self::LINK_POST ? $this->Form->postLink($text, $url, $fieldParams) : $this->Html->link($text, $url, $fieldParams),
+				'link' => $type === self::LINK_TYPE_POST
+					? $this->Form->postLink($text, $url, $params)
+					: $this->Html->link($text, $url, $params),
 				'type' => $type,
-				'extra' => $addExtra && is_array($url) ? Inflector::underscore("{$url['plugin']} {$url['controller']} {$url['action']}") : null
+				'extra' => $addExtra && is_array($url)
+					? Inflector::underscore("{$url['plugin']} {$url['controller']} {$url['action']}")
+					: null
 			]
 		)."\n";
 	}
 
+	/**
+	 *
+	 * @param string $path
+	 * @return string
+	 */
 	public function cellType($path)
 	{
+		// TODO input cell
 		// Link cell
 		if (strpos($path, '/') === 0) {
-			return self::CELL_LINK;
+			return self::CELL_TYPE_LINK;
 		// Data cell
 		} else {
-			return self::CELL_DATA;
+			return self::CELL_TYPE_DATA;
 		}
-		// TODO input cell
 	}
 
-	public function tbodyCell(Entity $result, $path, array $fieldParams = array())
+	/**
+	 *
+	 * @param Entity $result
+	 * @param string $path
+	 * @param array $fieldParams
+	 * @return string
+	 */
+	public function tbodyCell(Entity $result, $path, array $fieldParams = [])
 	{
 		$cell = null;
 
 		switch($this->cellType($path))
 		{
-			case self::CELL_LINK:
+			case self::CELL_TYPE_LINK:
 				$cell = $this->tbodyLinkCell($result, $path, $fieldParams);
 				break;
-			case self::CELL_DATA:
+			case self::CELL_TYPE_DATA:
 				$cell = $this->tbodyDataCell($result, $path, $fieldParams);
 				break;
 		}
@@ -223,6 +305,12 @@ class ResultsSetHelper extends Helper
 		return $cell;
 	}
 
+	/**
+	 *
+	 * @param ResultSet $results
+	 * @param array $paths
+	 * @return string
+	 */
 	public function tbody(ResultSet $results, array $paths)
 	{
 		$tbodyRows = '';
@@ -239,6 +327,12 @@ class ResultsSetHelper extends Helper
 		return $this->templater()->format('tbody', ['tbodyRows' => $tbodyRows]);
 	}
 
+	/**
+	 *
+	 * @param ResultSet $results
+	 * @param array $paths
+	 * @return string
+	 */
 	public function table(ResultSet $results, array $paths)
 	{
 		return $this->templater()->format(
@@ -250,7 +344,14 @@ class ResultsSetHelper extends Helper
 		);
 	}
 
-	public function index(ResultSet $results, array $paths, array $params = array())
+	/**
+	 *
+	 * @param ResultSet $results
+	 * @param array $paths
+	 * @param array $params
+	 * @return string
+	 */
+	public function index(ResultSet $results, array $paths, array $params = [])
 	{
 		if(!empty($results))
 		{
@@ -265,13 +366,22 @@ class ResultsSetHelper extends Helper
 
 		} else {
 			// TODO: i18n + attribute
-			$message = __( Hash::get($params, 'message') || 'No record was found' );
-			$index = $this->templater()->format('empty', ['message' => $message]);
+			$index = $this->templater()->format(
+				'empty',
+				[
+					'message' => __( Hash::get($params, 'message') || 'No record was found' )
+				]
+			);
 		}
 
 		return $index;
 	}
 
+	/**
+	 *
+	 * @param array $options
+	 * @return string
+	 */
 	public function pagination( array $options = array() )
 	{
 		if($this->Paginator->param('count') < 1) {

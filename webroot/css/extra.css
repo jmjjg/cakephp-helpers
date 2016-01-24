@@ -20,10 +20,25 @@ table.results_set tbody td.action {
 	max-width: 3em;
 	background: yellow;
 }*/
-table.results_set tbody td.action a {
-	display: block;
-}
 table.results_set tbody td.data.datetime {
 	white-space: pre;
-	overflow: hidden;
+}
+table.results_set tbody td.data.integer {
+	text-align: right;
+}
+
+table.results_set tbody td.action a {
+	display: block;
+	background-repeat: no-repeat;
+	background-position: 0 50%;
+	padding-left: 20px;
+}
+table.results_set tbody td.action.view a {
+	background-image: url(../img/famfamfam_silk_icons/zoom.png);
+}
+table.results_set tbody td.action.edit a {
+	background-image: url(../img/famfamfam_silk_icons/pencil.png);
+}
+table.results_set tbody td.action.delete a {
+	background-image: url(../img/famfamfam_silk_icons/delete.png);
 }
