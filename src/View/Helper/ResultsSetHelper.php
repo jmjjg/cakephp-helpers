@@ -7,30 +7,36 @@ use Cake\ORM\ResultSet;
 use Cake\Utility\Inflector;
 use Cake\View\Helper;
 use Cake\View\StringTemplateTrait;
+use Helpers\Utility\Url;
 
 /**
- * Usage
- *	$this->Html->css('Helpers.extra', ['block' => true]);
- *	echo $this->ResultsSet->index(
- *		$groups,
- *		[
- *			'id',
- *			'name',
- *			'created',
- *			'modified',
- *			'/Groups/view/{{id}}' => [
- *				'title' => __('View group « {{name}} » (# {{id}})')
- *			],
- *			'/Groups/edit/{{id}}' => [
- *				'title' => __('Edit group « {{name}} » (# {{id}})')
- *			],
- *			'/Groups/delete/{{id}}' => [
- *				'type' => 'post',
- *				'title' => __('Delete group « {{name}} » (# {{id}})'),
- *				'confirm' => __('Are you sure you want to delete the group « {{name}} » (# {{id}})?')
- *			],
- *		]
- *	);
+ * Sample usage:
+ * $this->Html->css('Helpers.extra', ['block' => true]);
+ * echo $this->ResultsSet->index(
+ * 	$groups,
+ * 	[
+ * 		'id',
+ * 		'name',
+ * 		'created',
+ * 		'modified',
+ * 		'/Groups/view/{{id}}' => [
+ * 			// INFO: set to false to disable auto title
+ * 			//'title' => __('View group « {{name}} » (# {{id}})')
+ * 		],
+ * 		'/Groups/edit/{{id}}' => [
+ * 			// INFO: set to false to disable auto title
+ * 			//'title' => __('Edit group « {{name}} » (# {{id}})')
+ * 		],
+ * 		'/Groups/delete/{{id}}' => [
+ * 			// INFO: set to false to disable auto title
+ * 			//'title' => __('Delete group « {{name}} » (# {{id}})'),
+ * 			'type' => 'post',
+ * 			// INFO: don't set or set to false to disable auto confirm message
+ * 			//'confirm' => __('Are you sure you want to delete the group « {{name}} » (# {{id}})?')
+ * 			'confirm' => true
+ * 		],
+ * 	]
+ * );
  */
 class ResultsSetHelper extends Helper
 {
@@ -182,30 +188,7 @@ class ResultsSetHelper extends Helper
 		$this->templater()->remove('_link');
 		$this->templater()->add(['_link' => $string]);
 		return $this->templater()->format('_link', $result->toArray());
-	}
-
-	/**
-	 *
-	 * @todo plugin, prefix
-	 *
-	 * @param Entity $result
-	 * @param type $path
-	 * @param array $fieldParams
-	 * @return type
-	 */
-	protected function _link(Entity $result, $path)
-	{
-		$url = $this->_translate($result, $path);
-
-		if (preg_match('/^\/(?<controller>[^\/]+)\/(?<action>[^\/]+)\/(?<extra>.*)$/', $url, $matches)) {
-			// TODO: ?&=
-			$url = ['plugin' => null, 'controller' => $matches['controller'], 'action' => $matches['action']] + explode('/', $matches['extra']);
-		} else {
-			$url = $path;
-		}
-		$this->templater()->remove('_link');
-
-		return $url;
+		//$this->templater()->remove('_link');
 	}
 
 	/**
@@ -237,18 +220,45 @@ class ResultsSetHelper extends Helper
 			<?= $this->Html->link(__('Edit'), ['action' => 'edit', $result->id]) ?>
 			<?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $result->id], ['confirm' => __('Are you sure you want to delete # {0}?', $result->id)]) ?>
 		</td>*/
+// TODO: cache ?
+		$url = Url::parse($this->_translate($result, $path));
 
-		$url = $this->_link($result, $path);
-		$text = is_array($url) ? __(Inflector::camelize($url['action'])) : $url;
+		if(is_array($url)) {
+			if(!isset($params['title']) || in_array($params['title'], [true, null], true)) {
+				$params['title'] =  __(
+					sprintf(
+						'%s %s « {{name}} » (#{{id}})',
+						Inflector::humanize($url['action']),
+						mb_convert_case(Inflector::classify($url['controller']), MB_CASE_LOWER)
+					)
+				);
+			}
+
+			if(isset($params['confirm']) && in_array($params['confirm'], [true, null], true)) {
+				$params['confirm'] =  __(
+					sprintf(
+						'Are you sure you want to %s the %s « {{name}} » (#{{id}})',
+						mb_convert_case(Inflector::humanize($url['action']),MB_CASE_LOWER),
+						mb_convert_case(Inflector::humanize(Inflector::singularize($url['controller'])),MB_CASE_LOWER)
+					)
+				);
+			}
+
+			$text = __(Inflector::camelize($url['action']));
+		} else {
+			$text = $url;
+		}
+
 		$type = Hash::get( $params, 'type' ) === self::LINK_TYPE_POST ? self::LINK_TYPE_POST : self::LINK_TYPE_GET;
 		unset($params['type']);
-		$addExtra = false === isset($params['extra']) || !empty($params['extra']);
 
 		foreach(['confirm', 'title'] as $key) {
 			if(isset($params[$key])) {
 				$params[$key] = $this->_translate($result, $params[$key]);
 			}
 		}
+
+		$addExtra = false === isset($params['extra']) || !empty($params['extra']);
 
 		return $this->templater()->format(
 			'tbodyLinkCell',
@@ -365,7 +375,7 @@ class ResultsSetHelper extends Helper
 			);
 
 		} else {
-			// TODO: i18n + attribute
+			// TODO: i18n (domain, function) + attribute
 			$index = $this->templater()->format(
 				'empty',
 				[
