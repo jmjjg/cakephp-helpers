@@ -40,5 +40,10 @@ class UrlTest extends TestCase
 		$result = Url::parse('http://github.com');
 		$expected = 'http://github.com';
 		$this->assertEquals($expected, $result);
+
+		$result = Url::parse('mailto:foo@bar.com');
+		$expected = 'mailto:foo@bar.com';
+		$this->assertEquals($expected, $result);
     }
+
 }

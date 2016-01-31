@@ -32,6 +32,7 @@ abstract class Url
 				}
 
 				$result = Router::parse($url);
+
 				$pass = (array)Hash::get($result, 'pass');
 				unset($result['pass']);
 
