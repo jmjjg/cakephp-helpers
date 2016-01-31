@@ -72,13 +72,17 @@ class ResultHelper extends Helper
 		$type = $this->type($result, $path, $params);
 
 		$value = Hash::get($result, $path);
-		switch($type) {
-			case 'integer':
-				$value = $this->Number->format($value);
-				break;
+		if($value !== null) {
+			switch($type) {
+				case 'integer':
+					$value = $this->Number->format($value);
+					break;
+			}
+
+			$value = (string)$value;
 		}
 
-		return (string)$value;
+		return $value;
 	}
 
 	/**
