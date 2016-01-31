@@ -12,15 +12,15 @@ echo $this->ResultsSet->index(
 		'modified',
 		'/Groups/view/{{id}}' => [
 			// INFO: set to false to disable auto title
-			//'title' => __('View group « {{name}} » (# {{id}})')
+			//'title' => __('View group « {{name}} » (#{{id}})')
 		],
 		'/Groups/edit/{{id}}' => [
 			// INFO: set to false to disable auto title
-			//'title' => __('Edit group « {{name}} » (# {{id}})')
+			//'title' => __('Edit group « {{name}} » (#{{id}})')
 		],
 		'/Groups/delete/{{id}}' => [
 			// INFO: set to false to disable auto title
-			//'title' => __('Delete group « {{name}} » (# {{id}})'),
+			//'title' => __('Delete group « {{name}} » (#{{id}})'),
 			'type' => 'post',
 			// INFO: don't set or set to false to disable auto confirm message
 			//'confirm' => __('Are you sure you want to delete the group « {{name}} » (# {{id}})?')

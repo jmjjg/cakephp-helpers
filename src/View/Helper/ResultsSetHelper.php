@@ -21,15 +21,15 @@ use Helpers\Utility\Url;
  * 		'modified',
  * 		'/Groups/view/{{id}}' => [
  * 			// INFO: set to false to disable auto title
- * 			//'title' => __('View group « {{name}} » (# {{id}})')
+ * 			//'title' => __('View group « {{name}} » (#{{id}})')
  * 		],
  * 		'/Groups/edit/{{id}}' => [
  * 			// INFO: set to false to disable auto title
- * 			//'title' => __('Edit group « {{name}} » (# {{id}})')
+ * 			//'title' => __('Edit group « {{name}} » (#{{id}})')
  * 		],
  * 		'/Groups/delete/{{id}}' => [
  * 			// INFO: set to false to disable auto title
- * 			//'title' => __('Delete group « {{name}} » (# {{id}})'),
+ * 			//'title' => __('Delete group « {{name}} » (#{{id}})'),
  * 			'type' => 'post',
  * 			// INFO: don't set or set to false to disable auto confirm message
  * 			//'confirm' => __('Are you sure you want to delete the group « {{name}} » (# {{id}})?')
@@ -221,7 +221,7 @@ class ResultsSetHelper extends Helper
 			<?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $result->id], ['confirm' => __('Are you sure you want to delete # {0}?', $result->id)]) ?>
 		</td>*/
 // TODO: cache ?
-		$url = Url::parse($this->_translate($result, $path));
+		$url = Url::parse($this->_translate($result, $path)); // TODO: or $params['url'] + translate ? / method params ?
 
 		if(is_array($url)) {
 			if(!isset($params['title']) || in_array($params['title'], [true, null], true)) {
@@ -247,6 +247,9 @@ class ResultsSetHelper extends Helper
 			$text = __(Inflector::camelize($url['action']));
 		} else {
 			$text = $url;
+			if (strpos($text, 'mailto:') === 0) {
+				$text = substr($text, 7);
+			}
 		}
 
 		$type = Hash::get( $params, 'type' ) === self::LINK_TYPE_POST ? self::LINK_TYPE_POST : self::LINK_TYPE_GET;
@@ -283,7 +286,7 @@ class ResultsSetHelper extends Helper
 	{
 		// TODO input cell
 		// Link cell
-		if (strpos($path, '/') === 0) {
+		if (strpos($path, '/') === 0 || preg_match('/^(mailto|(ht)tps{0,1}):/', $path)) {
 			return self::CELL_TYPE_LINK;
 		// Data cell
 		} else {
