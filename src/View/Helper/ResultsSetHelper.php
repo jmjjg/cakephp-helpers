@@ -74,7 +74,7 @@ class ResultsSetHelper extends Helper
 			'tbodyDataCell' => '<td class="data {{type}} {{extra}}">{{data}}</td>',
 			'tbodyLinkCell' => '<td class="action {{extra}}">{{link}}</td>',
 			'index' => '<div class="index {{model}}">{{pagination}}{{table}}{{pagination}}</div>',
-			'empty' => '<p class="notice">{{$message}}</p>',
+			'empty' => '<p class="notice">{{message}}</p>',
 			// Pagination
 			'paginationCounter' => '<p>{{counter}}</p>',
 			'paginationLinks' => '<ul class="pagination">{{links}}</ul>',
@@ -366,7 +366,7 @@ class ResultsSetHelper extends Helper
 	 */
 	public function index(ResultSet $results, array $paths, array $params = [])
 	{
-		if(!empty($results))
+		if(count($results) > 0)
 		{
 			$index = $this->templater()->format(
 				'index',
@@ -379,10 +379,11 @@ class ResultsSetHelper extends Helper
 
 		} else {
 			// TODO: i18n (domain, function) + attribute
+			$message = __( Hash::get($params, 'message') );
 			$index = $this->templater()->format(
 				'empty',
 				[
-					'message' => __( Hash::get($params, 'message') || 'No record was found' )
+					'message' => $message !== null ? $message : 'No record was found'
 				]
 			);
 		}

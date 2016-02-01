@@ -30,5 +30,19 @@ echo $this->ResultsSet->index(
 );
 ```
 
+### Unit tests
+```bash
+sudo -u apache vendor/bin/phpunit plugins/Helpers
+```
+
+### Code quality
+```bash
+sudo rm logs/*.log
+sudo rm -r logs/quality
+sudo rm tmp/cache/models/myapp*
+sudo rm tmp/cache/persistent/myapp*
+sudo -u apache ant quality -f plugins/Helpers/vendor/Jenkins/build.xml
+```
+
 ## Credits
 Uses a subset of [Famfamfam's Silk icon set](http://www.famfamfam.com/lab/icons/silk/), see README file in webroot/img/famfamfam_silk_icons
