@@ -19,7 +19,10 @@
 
 	<!-- controversial -->
 	<rule ref="rulesets/controversial.xml">
+		<exclude name="CamelCaseClassName" />
 		<exclude name="CamelCasePropertyName" />
+		<exclude name="CamelCaseMethodName" />
+		<exclude name="CamelCaseParameterName" />
 	</rule>
 
 	<!-- design -->

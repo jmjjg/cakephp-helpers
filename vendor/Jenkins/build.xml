@@ -107,6 +107,7 @@
 	</target>
 
 	<!-- Tests untaires pour la qualité, avec écriture des résultats -->
+	<!-- - -coverage-html ${dir.ant.logs}/coverage -->
 	<target name="phpunit" depends="clean,php-lint">
 		<exec executable="vendor/bin/phpunit" dir="${basedir}" failonerror="true">
 			<arg line="--report-useless-tests
@@ -114,7 +115,6 @@
                        --debug
 					   --configuration ${file.phpunit.config}
 					   --log-junit ${dir.ant.logs}/phpunit.xml
-                       --coverage-html ${dir.ant.logs}/coverage
 					   --coverage-clover ${dir.ant.logs}/phpunit.coverage.xml
                        plugins/Helpers/" />
 		</exec>
@@ -148,6 +148,7 @@
 	</target>
 
 	<!-- Checkstyle -->
+	<!-- vendor/bin/phpcs - -config-set installed_paths vendor/cakephp/cakephp-codesniffer -->
 	<target name="phpcs" depends="clean,php-lint">
 		<exec executable="vendor/bin/phpcs"
 			  dir="${basedir}"
