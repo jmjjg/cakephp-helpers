@@ -23,6 +23,7 @@
 		<exclude name="CamelCasePropertyName" />
 		<exclude name="CamelCaseMethodName" />
 		<exclude name="CamelCaseParameterName" />
+		<exclude name="CamelCaseVariableName" />
 	</rule>
 
 	<!-- design -->
