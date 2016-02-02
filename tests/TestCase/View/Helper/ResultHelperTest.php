@@ -1,12 +1,15 @@
 <?php
+/**
+ *
+ */
 namespace Helpers\Test\TestCase\View\Helper;
 
 use Cake\Network\Request;
 use Cake\Network\Session;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
-use Helpers\View\Helper\ResultHelper;
 use Cake\View\View;
+use Helpers\View\Helper\ResultHelper;
 
 /**
  * php ../composer.phar require --dev phpunit/phpunit
@@ -14,15 +17,16 @@ use Cake\View\View;
  */
 class ResultHelperTest extends TestCase
 {
-	/**
-	 * Fixtures used.
-	 *
-	 * @var array
-	 */
-	public $fixtures = [
-		'core.Groups',
-		'core.Uuiditems'
-	];
+
+    /**
+     * Fixtures used.
+     *
+     * @var array
+     */
+    public $fixtures = [
+        'core.Groups',
+        'core.Uuiditems'
+    ];
 
     /**
      * setUp method
@@ -32,8 +36,8 @@ class ResultHelperTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-		$this->Groups = TableRegistry::get('Groups');
-		$this->Uuiditems = TableRegistry::get('Uuiditems');
+        $this->Groups = TableRegistry::get('Groups');
+        $this->Uuiditems = TableRegistry::get('Uuiditems');
 
         $this->View = new View();
         $session = new Session();
@@ -52,14 +56,14 @@ class ResultHelperTest extends TestCase
         unset($this->View, $this->Result);
     }
 
-	/**
-	 * Test the type method
-	 *
-	 * @return void
-	 */
+    /**
+     * Test the type method
+     *
+     * @return void
+     */
     public function testType()
     {
-		$group = $this->Groups->get(1);
+        $group = $this->Groups->get(1);
 
         $result = $this->Result->type($group, 'id');
         $expected = 'integer';
@@ -69,21 +73,21 @@ class ResultHelperTest extends TestCase
         $expected = 'string';
         $this->assertEquals($expected, $result);
 
-		$uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
+        $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->type($uuiditem, 'published');
         $expected = 'boolean';
         $this->assertEquals($expected, $result);
     }
 
-	/**
-	 * Test the value method
-	 *
-	 * @return void
-	 */
+    /**
+     * Test the value method
+     *
+     * @return void
+     */
     public function testValue()
     {
-		$group = $this->Groups->get(1);
+        $group = $this->Groups->get(1);
 
         $result = $this->Result->value($group, 'id');
         $expected = '1';
@@ -93,21 +97,21 @@ class ResultHelperTest extends TestCase
         $expected = 'foo';
         $this->assertEquals($expected, $result);
 
-		$uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
+        $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->value($uuiditem, 'published');
         $expected = false;
         $this->assertEquals($expected, $result);
     }
 
-	/**
-	 * Test the extra method
-	 *
-	 * @return void
-	 */
+    /**
+     * Test the extra method
+     *
+     * @return void
+     */
     public function testExtra()
     {
-		$group = $this->Groups->get(1);
+        $group = $this->Groups->get(1);
 
         $result = $this->Result->extra($group, 'id');
         $expected = 'positive';
@@ -117,11 +121,10 @@ class ResultHelperTest extends TestCase
         $expected = '';
         $this->assertEquals($expected, $result);
 
-		$uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
+        $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->extra($uuiditem, 'published');
         $expected = 'false';
         $this->assertEquals($expected, $result);
     }
-
 }

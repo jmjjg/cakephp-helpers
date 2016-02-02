@@ -1,53 +1,59 @@
 <?php
+/**
+ *
+ */
 namespace Helpers\Utility;
 
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
 
+/**
+ * Utility class used for URL parsing.
+ */
 abstract class Url
 {
-	/**
-	 *
-	 * @var array
-	 */
-	protected static $_cache = [];
 
-	/**
-	 * @todo plugin, prefix
-	 * @todo ?&=
-	 *
-	 * @param array|string $url
-	 * @return array|string
-	 */
-	public static function parse($url)
-	{
-		if(is_string($url) && strpos($url, '/') === 0)
-		{
-			try {
-				if(preg_match( '/^(.*)#(.*)/', $url, $matches)) {
-					$url = $matches[1];
-					$hash = $matches[2];
-				} else {
-					$hash = null;
-				}
+    /**
+     * Cache for parsed URL strings.
+     *
+     * @var array
+     */
+    protected static $_cache = [];
 
-				$result = Router::parse($url);
+    /**
+     * Returns an URL parsed in a CakePHP array or the original string if it
+     * could not be parsed.
+     *
+     * @param array|string $url The URL to be parsed
+     * @return array|string
+     */
+    public static function parse($url)
+    {
+        if (is_string($url) && strpos($url, '/') === 0) {
+            try {
+                if (preg_match('/^(.*)#(.*)/', $url, $matches)) {
+                    $url = $matches[1];
+                    $hash = $matches[2];
+                } else {
+                    $hash = null;
+                }
 
-				$pass = (array)Hash::get($result, 'pass');
-				unset($result['pass']);
+                $result = Router::parse($url);
 
-				$result = $result + $pass;
-				if($hash !== null) {
-					$result += ['#' => $hash];
-				}
+                $pass = (array)Hash::get($result, 'pass');
+                unset($result['pass']);
 
-			} catch(Exception $e) {
-				$result = $url;
-			}
-		} else {
-			$result = $url;
-		}
+                $result = $result + $pass;
+                if ($hash !== null) {
+                    $result += ['#' => $hash];
+                }
+            } catch (Exception $e) {
+                $result = $url;
+            }
+        } else {
+            $result = $url;
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 }
