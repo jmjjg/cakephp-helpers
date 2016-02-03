@@ -1,6 +1,9 @@
 <?php
 /**
+ * Source code for the ResultHelperTest unit test class from the Helpers CakePHP 3 plugin.
  *
+ * @author Christian Buffin
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Helpers\Test\TestCase\View\Helper;
 

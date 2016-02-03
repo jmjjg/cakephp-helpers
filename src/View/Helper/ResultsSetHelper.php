@@ -1,6 +1,9 @@
 <?php
 /**
+ * Source code for the ResultsSetHelper class from the Helpers CakePHP 3 plugin.
  *
+ * @author Christian Buffin
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Helpers\View\Helper;
 
@@ -46,9 +49,24 @@ class ResultsSetHelper extends Helper
 
     use StringTemplateTrait;
 
+    /**
+     * A "td" containing an "a"
+     */
     const CELL_TYPE_LINK = 'link';
+
+    /**
+     * A "td" containing data
+     */
     const CELL_TYPE_DATA = 'data';
+
+    /**
+     * Classic <a href /> GET link
+     */
     const LINK_TYPE_GET = 'href';
+
+    /**
+     * Looks like a link but is a mini POST form
+     */
     const LINK_TYPE_POST = 'post';
 
     /**
@@ -68,6 +86,7 @@ class ResultsSetHelper extends Helper
     ];
 
     /**
+     * The default config, to merge with the parent's
      *
      * @var array
      */
@@ -87,12 +106,13 @@ class ResultsSetHelper extends Helper
             'empty' => '<p class="notice">{{message}}</p>',
             // Pagination
             'paginationCounter' => '<p>{{counter}}</p>',
-            'paginationLinks' => '<ul class="pagination">{{links}}</ul>',
+            'paginationLinks' => '<ul class="pagination">{{first}}{{prev}}{{numbers}}{{next}}{{last}}</ul>',
             'pagination' => '<div class="paginator">{{counter}}{{links}}</div>'
         ]
     ];
 
     /**
+     * Params to be merged by the _params() method, using keys.
      *
      * @var array
      */
@@ -108,7 +128,7 @@ class ResultsSetHelper extends Helper
     /**
      * Returns an array of actions that are only at the end of the paths.
      *
-     * @param array $paths
+     * @param array $paths A list of call paths
      * @return array
      */
     protected function _actionCells(array $paths)
@@ -131,18 +151,18 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a classic thead with theadCell sort links and a theadActionCell
+     * with a {{count}} rowspan.
      *
-     * @todo actions cell (theadCell)
-     *
-     * @param array $paths
+     * @param array $paths A list of call paths
      * @return string
      */
     public function thead(array $paths)
     {
         $theadCells = '';
-        foreach (Hash::normalize($paths) as $path => $fieldParams) {
+        foreach (Hash::normalize($paths) as $path => $params) {
             if ($this->cellType($path) === self::CELL_TYPE_DATA) {
-                $theadCell = $this->Paginator->sort($path, (array)$fieldParams);
+                $theadCell = $this->Paginator->sort($path, (array)$params);
                 $theadCells .= $this->templater()->format('theadCell', ['theadCell' => $theadCell]) . "\n";
             }
         }
@@ -165,22 +185,24 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a <tbodyDataCell> containing <data>, <type> and <extra> values
+     * extract by $path from the result.
      *
-     * @param Entity $result
-     * @param string $path
-     * @param array $fieldParams Set "extra" key to false to disable extra info
+     * @param Entity $result An Entity result
+     * @param string $path A cell path
+     * @param array $params Set "extra" key to false to disable extra info
      * @return string
      */
-    public function tbodyDataCell(Entity $result, $path, array $fieldParams = [])
+    public function tbodyDataCell(Entity $result, $path, array $params = [])
     {
-        $addExtra = false === isset($fieldParams['extra']) || !empty($fieldParams['extra']);
+        $addExtra = false === isset($params['extra']) || !empty($params['extra']);
 
         return $this->templater()->format(
             'tbodyDataCell',
             [
-                'data' => h($this->Result->value($result, $path, $fieldParams)),
-                'type' => $this->Result->type($result, $path, $fieldParams),
-                'extra' => $addExtra ? $this->Result->extra($result, $path, $fieldParams) : null
+                'data' => h($this->Result->value($result, $path, $params)),
+                'type' => $this->Result->type($result, $path, $params),
+                'extra' => $addExtra ? $this->Result->extra($result, $path, $params) : null
             ]
         ) . "\n";
     }
@@ -189,8 +211,8 @@ class ResultsSetHelper extends Helper
      * Utility function to translate a string with values from the entity using
      * the templater.
      *
-     * @param Entity $result
-     * @param string $string
+     * @param Entity $result An Entity result
+     * @param string $string The string to translate
      * @return string
      */
     protected function _translate(Entity $result, $string)
@@ -204,8 +226,8 @@ class ResultsSetHelper extends Helper
     /**
      * Returns params + defaults in _paramsDefaults using key.
      *
-     * @param string $key
-     * @param array $params
+     * @param string $key The key for default params
+     * @param array $params The params to complete
      * @return array
      */
     protected function _params($key, array $params = [])
@@ -214,10 +236,13 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a "td" cell containing a link (heither LINK_TYPE_GET or
+     * LINK_TYPE_POST) with the translated path as maybe a parsable CakePHP URL.
      *
-     * @param Entity $result
-     * @param string $path
-     * @param array $params
+     * @param Entity $result An Entity result
+     * @param string $path A cell path
+     * @param array $params Keys are title, confirm, type, extra, used as
+     *  FormHelper::postLink() and HtmlHelper::link() params.
      * @return string
      */
     public function tbodyLinkCell(Entity $result, $path, array $params = [])
@@ -284,8 +309,10 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns the type of a cell: a link cell (CELL_TYPE_LINK) or a data cell
+     * (CELL_TYPE_DATA).
      *
-     * @param string $path
+     * @param string $path A cell path
      * @return string
      */
     public function cellType($path)
@@ -301,22 +328,23 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a body cell based on its type (CELL_TYPE_LINK or CELL_TYPE_DATA).
      *
-     * @param Entity $result
-     * @param string $path
-     * @param array $fieldParams
+     * @param Entity $result An Entity result
+     * @param string $path A cell path
+     * @param array $params Used in tbodyLinkCell and tbodyDataCell calls
      * @return string
      */
-    public function tbodyCell(Entity $result, $path, array $fieldParams = [])
+    public function tbodyCell(Entity $result, $path, array $params = [])
     {
         $cell = null;
 
         switch ($this->cellType($path)) {
             case self::CELL_TYPE_LINK:
-                $cell = $this->tbodyLinkCell($result, $path, $fieldParams);
+                $cell = $this->tbodyLinkCell($result, $path, $params);
                 break;
             case self::CELL_TYPE_DATA:
-                $cell = $this->tbodyDataCell($result, $path, $fieldParams);
+                $cell = $this->tbodyDataCell($result, $path, $params);
                 break;
         }
 
@@ -324,9 +352,10 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a <tbody> containing <tbodyRows> containing <tbodyCells>.
      *
-     * @param ResultSet $results
-     * @param array $paths
+     * @param ResultSet $results A list of Entity results
+     * @param array $paths A list of call paths
      * @return string
      */
     public function tbody(ResultSet $results, array $paths)
@@ -335,8 +364,8 @@ class ResultsSetHelper extends Helper
 
         foreach ($results as $result) {
             $tbodyCells = '';
-            foreach (Hash::normalize($paths) as $path => $fieldParams) {
-                $tbodyCells .= $this->tbodyCell($result, $path, (array)$fieldParams);
+            foreach (Hash::normalize($paths) as $path => $params) {
+                $tbodyCells .= $this->tbodyCell($result, $path, (array)$params);
             }
 
             $tbodyRows .= $this->templater()->format('tbodyRows', ['tbodyCells' => $tbodyCells]);
@@ -346,9 +375,10 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns a <table> containing a <thead> and a <tbody>.
      *
-     * @param ResultSet $results
-     * @param array $paths
+     * @param ResultSet $results A list of Entity results
+     * @param array $paths A list of call paths
      * @return string
      */
     public function table(ResultSet $results, array $paths)
@@ -363,10 +393,12 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * Returns an <index> containing a <table>, <pagination> and the <model> name
+     * if there are results or an <empty> <message>.
      *
-     * @param ResultSet $results
-     * @param array $paths
-     * @param array $params
+     * @param ResultSet $results A list of Entity results
+     * @param array $paths A list of call paths
+     * @param array $params The only used key is "message"
      * @return string
      */
     public function index(ResultSet $results, array $paths, array $params = [])
@@ -395,25 +427,36 @@ class ResultsSetHelper extends Helper
     }
 
     /**
+     * If there is at least one page of results, returns a <pagination> block
+     * which contains a list of navigation <links> (<paginationLinks>) and a
+     * <paginationCounter>.
      *
-     * @param array $options
+     * @fixme disabledTitle
+     * @see Cake\View\Helper\PaginatorHelper::prev()
+     * @see Cake\View\Helper\PaginatorHelper::$options
+     *
+     * @param array $options @see Helpers\View\Helper\PaginatorHelper Available
+     *  keys are "model", ...
      * @return string
      */
     public function pagination(array $options = [])
     {
-        if ($this->Paginator->param('count') < 1) {
+        if ($this->Paginator->param('count', Hash::get($options, 'model')) < 1) {
             return null;
         }
 
-        // TODO: i18n + attribute
-        $links = $this->Paginator->first(__('<< first'), $options)
-            . $this->Paginator->prev(__('< previous'), $options)
-            . $this->Paginator->numbers($options)
-            . $this->Paginator->next(__('next >'), $options)
-            . $this->Paginator->last(__('last >>'), $options);
-
         $counter = $this->templater()->format('paginationCounter', ['counter' => $this->Paginator->counter()]);
-        $links = $this->templater()->format('paginationLinks', ['links' => $links]);
+        $links = $this->templater()->format(
+            'paginationLinks',
+            [
+                // TODO: i18n + attribute
+                'first' => $this->Paginator->first(__('<< first'), $options),
+                'prev' => $this->Paginator->prev(__('< previous'), $options),
+                'numbers' => $this->Paginator->numbers($options),
+                'next' => $this->Paginator->next(__('next >'), $options),
+                'last' => $this->Paginator->last(__('last >>'), $options)
+            ]
+        );
 
         return $this->templater()->format(
             'pagination',

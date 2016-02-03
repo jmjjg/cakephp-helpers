@@ -1,6 +1,9 @@
 <?php
 /**
+ * Source code for the PaginatorHelper class from the Helpers CakePHP 3 plugin.
  *
+ * @author Christian Buffin
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Helpers\View\Helper;
 
@@ -8,7 +11,8 @@ use Cake\View\Helper\PaginatorHelper as CakePaginatorHelper;
 use Cake\View\View;
 
 /**
- *
+ * The Helpers.PaginatorHelper extends the original by overwriting the first, last
+ * and last and numbers method to return something disabled when needed.
  */
 class PaginatorHelper extends CakePaginatorHelper
 {

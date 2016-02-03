@@ -1,6 +1,6 @@
 # cakephp-helpers
 
-# Usage
+## Usage
 ```php
 $this->Html->css('Helpers.extra', ['block' => true]);
 echo $this->ResultsSet->index(
