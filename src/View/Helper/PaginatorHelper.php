@@ -7,6 +7,7 @@
  */
 namespace Helpers\View\Helper;
 
+use Cake\Utility\Hash;
 use Cake\View\Helper\PaginatorHelper as CakePaginatorHelper;
 use Cake\View\View;
 
@@ -58,7 +59,8 @@ class PaginatorHelper extends CakePaginatorHelper
      */
     public function first($first = '<< first', array $options = [])
     {
-        if ($this->hasPrev() === false) {
+        $model = Hash::get($options, 'model');
+        if ($this->hasPrev($model) === false) {
             return $this->templater()->format(
                 'firstDisabled',
                 [
@@ -81,7 +83,8 @@ class PaginatorHelper extends CakePaginatorHelper
      */
     public function last($last = 'last >>', array $options = [])
     {
-        if ($this->hasNext() === false) {
+        $model = Hash::get($options, 'model');
+        if ($this->hasNext($model) === false) {
             return $this->templater()->format(
                 'lastDisabled',
                 [
@@ -103,7 +106,8 @@ class PaginatorHelper extends CakePaginatorHelper
      */
     public function numbers(array $options = [])
     {
-        if ($this->param('page') === 1 && $this->param('pageCount') === 1) {
+        $model = Hash::get($options, 'model');
+        if ((int)$this->param('pageCount', $model) <= 1) {
             return $this->templater()->format(
                 'numberDisabled',
                 [
@@ -112,7 +116,7 @@ class PaginatorHelper extends CakePaginatorHelper
                 ]
             );
         } else {
-            parent::numbers($options);
+            return parent::numbers($options);
         }
     }
 }
