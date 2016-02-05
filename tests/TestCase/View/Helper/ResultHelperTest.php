@@ -15,8 +15,7 @@ use Cake\View\View;
 use Helpers\View\Helper\ResultHelper;
 
 /**
- * php ../composer.phar require --dev phpunit/phpunit
- * vendor/bin/phpunit plugins/Helpers/tests/TestCase/View/Helper/ResultHelperTest
+ *
  */
 class ResultHelperTest extends TestCase
 {

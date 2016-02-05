@@ -32,15 +32,15 @@ echo $this->ResultsSet->index(
 
 ### Unit tests
 ```bash
+php ../composer.phar require --dev phpunit/phpunit
+
 sudo -u apache vendor/bin/phpunit plugins/Helpers
+sudo -u apache vendor/bin/phpunit plugins/Helpers/tests/TestCase/View/Helper/PaginatorHelperTest
 ```
 
 ### Code quality
 ```bash
-sudo rm logs/*.log
-sudo rm -r logs/quality
-sudo rm tmp/cache/models/myapp*
-sudo rm tmp/cache/persistent/myapp*
+sudo bash -c "( rm logs/*.log ; rm -r logs/quality ; rm tmp/cache/models/myapp* ; rm tmp/cache/persistent/myapp* )"
 sudo -u apache ant quality -f plugins/Helpers/vendor/Jenkins/build.xml
 ```
 
