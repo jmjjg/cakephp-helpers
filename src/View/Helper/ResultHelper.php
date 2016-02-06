@@ -67,18 +67,13 @@ class ResultHelper extends Helper
         // TODO
         //$primaryKey = 'id';
         //$primaryKey = $table->primaryKey();
-        if (!isset($params['type'])) {
-            $fields = $this->_fields($result->source());
-            if (!empty($fields)) {
-                $type = Hash::get($fields, $path);
-            } else {
-                $type = 'string';
-            }
-        } else {
-            $type = $params['type'];
+        $type = Hash::get($params, 'type');
+        if ($type === null) {
+            $fields = (array)$this->_fields($result->source());
+            $type = Hash::get($fields, $path);
         }
 
-        return $type;
+        return $type !== null ? $type : 'string';
     }
 
     /**

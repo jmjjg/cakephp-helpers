@@ -9,7 +9,6 @@ namespace Helpers\Test\TestCase\View\Helper;
 
 use Cake\Network\Request;
 use Cake\Network\Session;
-use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 use Cake\View\View;
 use Helpers\View\Helper\PaginatorHelper;
@@ -44,17 +43,19 @@ class PaginatorHelperTest extends TestCase
                     'prevPage' => false,
                     'nextPage' => false,
                     'pageCount' => 1,
+                    'perPage' => 10,
                     'sort' => null,
                     'direction' => null,
                     'limit' => null,
                 ],
                 'Groups' => [
                     'page' => 2,
-                    'current' => 41,
-                    'count' => 106,
+                    'current' => 21,
+                    'count' => 56,
                     'prevPage' => true,
                     'nextPage' => true,
                     'pageCount' => 5,
+                    'perPage' => 10,
                     'sort' => null,
                     'direction' => null,
                     'limit' => null,
@@ -77,6 +78,8 @@ class PaginatorHelperTest extends TestCase
     /**
      * Test PaginatorHelper::first() overwritten and original code.
      *
+     * @covers Helpers\View\Helper\PaginatorHelper::first
+     * @covers Helpers\View\Helper\PaginatorHelper::__construct
      * @return void
      */
     public function testFirst()
@@ -93,6 +96,8 @@ class PaginatorHelperTest extends TestCase
     /**
      * Test PaginatorHelper::last() overwritten and original code.
      *
+     * @covers Helpers\View\Helper\PaginatorHelper::last
+     * @covers Helpers\View\Helper\PaginatorHelper::__construct
      * @return void
      */
     public function testLast()
@@ -109,6 +114,8 @@ class PaginatorHelperTest extends TestCase
     /**
      * Test PaginatorHelper::numbers() overwritten and original code.
      *
+     * @covers Helpers\View\Helper\PaginatorHelper::numbers
+     * @covers Helpers\View\Helper\PaginatorHelper::__construct
      * @return void
      */
     public function testNumbers()

@@ -61,6 +61,8 @@ class ResultHelperTest extends TestCase
     /**
      * Test the type method
      *
+     * @covers Helpers\View\Helper\ResultHelper::type
+     * @covers Helpers\View\Helper\ResultHelper::_fields
      * @return void
      */
     public function testType()
@@ -80,11 +82,20 @@ class ResultHelperTest extends TestCase
         $result = $this->Result->type($uuiditem, 'published');
         $expected = 'boolean';
         $this->assertEquals($expected, $result);
+
+        $result = $this->Result->type($uuiditem, 'published', ['type' => 'test']);
+        $expected = 'test';
+        $this->assertEquals($expected, $result);
+
+        $result = $this->Result->type($uuiditem, 'inexistant');
+        $expected = 'string';
+        $this->assertEquals($expected, $result);
     }
 
     /**
      * Test the value method
      *
+     * @covers Helpers\View\Helper\ResultHelper::value
      * @return void
      */
     public function testValue()
@@ -109,6 +120,10 @@ class ResultHelperTest extends TestCase
     /**
      * Test the extra method
      *
+     * @covers Helpers\View\Helper\ResultHelper::extra
+     * @covers Helpers\View\Helper\ResultHelper::_booleanExtra
+     * @covers Helpers\View\Helper\ResultHelper::_integerExtra
+     * @covers Helpers\View\Helper\ResultHelper::_stringExtra
      * @return void
      */
     public function testExtra()
@@ -123,10 +138,30 @@ class ResultHelperTest extends TestCase
         $expected = '';
         $this->assertEquals($expected, $result);
 
+        $group->id = 0;
+        $result = $this->Result->extra($group, 'id');
+        $expected = 'zero';
+        $this->assertEquals($expected, $result);
+
+        $group->title = null;
+        $result = $this->Result->extra($group, 'title');
+        $expected = 'null';
+        $this->assertEquals($expected, $result);
+
+        $group->title = '';
+        $result = $this->Result->extra($group, 'title');
+        $expected = 'empty';
+        $this->assertEquals($expected, $result);
+
         $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->extra($uuiditem, 'published');
         $expected = 'false';
+        $this->assertEquals($expected, $result);
+
+        $uuiditem->published = true;
+        $result = $this->Result->extra($uuiditem, 'published');
+        $expected = 'true';
         $this->assertEquals($expected, $result);
     }
 }

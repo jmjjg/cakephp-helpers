@@ -11,12 +11,15 @@ use Cake\TestSuite\TestCase;
 use Helpers\Utility\Url;
 
 /**
- * php ../composer.phar require --dev phpunit/phpunit
- * vendor/bin/phpunit plugins/Helpers/tests/TestCase/Utility/UrlTest
+ *
  */
 class UrlTest extends TestCase
 {
 
+    /**
+     * @covers Helpers\Utility\Url::parse
+     * @return void
+     */
     public function testParse()
     {
         $result = Url::parse('/Groups/index/');
@@ -24,6 +27,10 @@ class UrlTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * @covers Helpers\Utility\Url::parse
+     * @return void
+     */
     public function testParseParams()
     {
         $result = Url::parse('/Groups/view/1');
@@ -31,6 +38,10 @@ class UrlTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * @covers Helpers\Utility\Url::parse
+     * @return void
+     */
     public function testParseGetParams()
     {
         $result = Url::parse('/Groups/index/?sort=id');
@@ -42,6 +53,10 @@ class UrlTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * @covers Helpers\Utility\Url::parse
+     * @return void
+     */
     public function testParseExternalUrl()
     {
         $result = Url::parse('http://github.com');

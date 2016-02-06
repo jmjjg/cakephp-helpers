@@ -230,10 +230,10 @@ class ResultsSetHelper extends Helper
      * @param array $params The params to complete
      * @return array
      */
-    protected function _params($key, array $params = [])
+    /*protected function _params($key, array $params = [])
     {
         return $params + (array)$this->_paramsDefaults[$key];
-    }
+    }*/
 
     /**
      * Returns a "td" cell containing a link (heither LINK_TYPE_GET or
@@ -441,10 +441,6 @@ class ResultsSetHelper extends Helper
      */
     public function pagination(array $options = [])
     {
-        if ($this->Paginator->param('count', Hash::get($options, 'model')) < 1) {
-            return null;
-        }
-
         $counter = $this->templater()->format('paginationCounter', ['counter' => $this->Paginator->counter()]);
         $links = $this->templater()->format(
             'paginationLinks',

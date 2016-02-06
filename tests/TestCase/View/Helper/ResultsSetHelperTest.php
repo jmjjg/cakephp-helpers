@@ -15,8 +15,7 @@ use Cake\View\View;
 use Helpers\View\Helper\ResultsSetHelper;
 
 /**
- * php ../composer.phar require --dev phpunit/phpunit
- * sudo -u apache vendor/bin/phpunit plugins/Helpers/tests/TestCase/View/Helper/ResultsSetHelperTest
+ *
  */
 class ResultsSetHelperTest extends TestCase
 {
@@ -45,7 +44,38 @@ class ResultsSetHelperTest extends TestCase
         $this->View = new View();
         $session = new Session();
         $this->View->request = new Request(['session' => $session]);
+
         $this->ResultsSet = new ResultsSetHelper($this->View);
+
+        $this->ResultsSet->Paginator->request = new Request();
+        $this->ResultsSet->Paginator->request->addParams([
+            'paging' => [
+                'Articles' => [
+                    'page' => 1,
+                    'current' => 1,
+                    'count' => 1,
+                    'prevPage' => false,
+                    'nextPage' => false,
+                    'pageCount' => 1,
+                    'perPage' => 10,
+                    'sort' => null,
+                    'direction' => null,
+                    'limit' => null,
+                ],
+                'Groups' => [
+                    'page' => 2,
+                    'current' => 21,
+                    'count' => 56,
+                    'prevPage' => true,
+                    'nextPage' => true,
+                    'pageCount' => 5,
+                    'perPage' => 10,
+                    'sort' => null,
+                    'direction' => null,
+                    'limit' => null,
+                ]
+            ]
+        ]);
     }
 
     /**
@@ -62,6 +92,17 @@ class ResultsSetHelperTest extends TestCase
     /**
      * Test the index method
      *
+     * @covers Helpers\View\Helper\ResultsSetHelper::index
+     * @covers Helpers\View\Helper\ResultsSetHelper::pagination
+     * @covers Helpers\View\Helper\ResultsSetHelper::table
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbody
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::cellType
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyLinkCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::_translate
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyDataCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::thead
+     * @covers Helpers\View\Helper\ResultsSetHelper::_actionCells
      * @return void
      */
     public function testIndex()
@@ -75,13 +116,13 @@ class ResultsSetHelperTest extends TestCase
                 'title'
             ]
         );
-        $expected = '<div class="index "><table class="results_set"><thead><tr><th><a href="/?sort=id&amp;direction=asc">Id</a></th>
+        $expected = '<div class="index articles"><div class="paginator"><p>Page 1 ou of 1, showing 1 records out of 1</p><ul class="pagination"><li class="first disabled"><a href="">&lt;&lt; first</a></li><li class="prev disabled"><a href="" onclick="return false;">&lt; previous</a></li><li class="active"><a href="">1</a></li><li class="next disabled"><a href="" onclick="return false;">next &gt;</a></li><li class="last disabled"><a href="">last &gt;&gt;</a></li></ul></div><table class="results_set"><thead><tr><th><a href="/?sort=id&amp;direction=asc">Id</a></th>
 <th><a href="/?sort=title&amp;direction=asc">Title</a></th>
 </tr></thead><tbody><tr><td class="data integer positive">1</td>
 <td class="data string ">foo</td>
 </tr><tr><td class="data integer positive">2</td>
 <td class="data string ">bar</td>
-</tr></tbody></table></div>';
+</tr></tbody></table><div class="paginator"><p>Page 1 ou of 1, showing 1 records out of 1</p><ul class="pagination"><li class="first disabled"><a href="">&lt;&lt; first</a></li><li class="prev disabled"><a href="" onclick="return false;">&lt; previous</a></li><li class="active"><a href="">1</a></li><li class="next disabled"><a href="" onclick="return false;">next &gt;</a></li><li class="last disabled"><a href="">last &gt;&gt;</a></li></ul></div></div>';
         $this->assertEquals($expected, $result);
         /* $expectedHtml = [
           'div' => ['class' => 'index '],
@@ -108,6 +149,17 @@ class ResultsSetHelperTest extends TestCase
     /**
      * Test the index method with links
      *
+     * @covers Helpers\View\Helper\ResultsSetHelper::index
+     * @covers Helpers\View\Helper\ResultsSetHelper::pagination
+     * @covers Helpers\View\Helper\ResultsSetHelper::table
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbody
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::cellType
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyLinkCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::_translate
+     * @covers Helpers\View\Helper\ResultsSetHelper::tbodyDataCell
+     * @covers Helpers\View\Helper\ResultsSetHelper::thead
+     * @covers Helpers\View\Helper\ResultsSetHelper::_actionCells
      * @return void
      */
     public function testIndexWithLinks()
@@ -128,7 +180,7 @@ class ResultsSetHelperTest extends TestCase
                 ]
             ]
         );
-        $expected = '<div class="index "><table class="results_set"><thead><tr><th><a href="/?sort=id&amp;direction=asc">Id</a></th>
+        $expected = '<div class="index articles"><div class="paginator"><p>Page 1 ou of 1, showing 1 records out of 1</p><ul class="pagination"><li class="first disabled"><a href="">&lt;&lt; first</a></li><li class="prev disabled"><a href="" onclick="return false;">&lt; previous</a></li><li class="active"><a href="">1</a></li><li class="next disabled"><a href="" onclick="return false;">next &gt;</a></li><li class="last disabled"><a href="">last &gt;&gt;</a></li></ul></div><table class="results_set"><thead><tr><th><a href="/?sort=id&amp;direction=asc">Id</a></th>
 <th><a href="/?sort=published&amp;direction=asc">Published</a></th>
 <th><a href="/?sort=name&amp;direction=asc">Name</a></th>
 <th class="actions" colspan="3">Actions</th>
@@ -138,14 +190,15 @@ class ResultsSetHelperTest extends TestCase
 <td class="action  uuiditems view"><a href="/uuiditems/view/481fc6d0-b920-43e0-a40d-6d1740cf8569" title="View uuiditem « Item 1 » (#481fc6d0-b920-43e0-a40d-6d1740cf8569)">View</a></td>
 <td class="action  uuiditems edit"><a href="/uuiditems/edit/481fc6d0-b920-43e0-a40d-6d1740cf8569" title="Edit uuiditem « Item 1 » (#481fc6d0-b920-43e0-a40d-6d1740cf8569)">Edit</a></td>
 <td class="action  uuiditems delete"><form name="post_0000000000000000000000" style="display:none;" method="post" action="/uuiditems/delete/481fc6d0-b920-43e0-a40d-6d1740cf8569"><input type="hidden" name="_method" value="POST"/></form><a href="#" title="Delete uuiditem « Item 1 » (#481fc6d0-b920-43e0-a40d-6d1740cf8569)" onclick="if (confirm(&quot;Are you sure you want to delete the uuiditem \u00ab Item 1 \u00bb (#481fc6d0-b920-43e0-a40d-6d1740cf8569)&quot;)) { document.post_0000000000000000000000.submit(); } event.returnValue = false; return false;">Delete</a></td>
-</tr></tbody></table></div>';
+</tr></tbody></table><div class="paginator"><p>Page 1 ou of 1, showing 1 records out of 1</p><ul class="pagination"><li class="first disabled"><a href="">&lt;&lt; first</a></li><li class="prev disabled"><a href="" onclick="return false;">&lt; previous</a></li><li class="active"><a href="">1</a></li><li class="next disabled"><a href="" onclick="return false;">next &gt;</a></li><li class="last disabled"><a href="">last &gt;&gt;</a></li></ul></div></div>';
         $result = preg_replace('/post_[^"\.]+/m', 'post_0000000000000000000000', $result);
         $this->assertEquals($expected, $result);
     }
 
     /**
-     * Test the index method
+     * Test the index method on enmpty results set
      *
+     * @covers Helpers\View\Helper\ResultsSetHelper::index
      * @return void
      */
     public function testIndexEmpty()
