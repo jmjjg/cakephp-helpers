@@ -35,12 +35,13 @@ echo $this->ResultsSet->index(
 php ../composer.phar require --dev phpunit/phpunit
 
 sudo -u apache vendor/bin/phpunit plugins/Helpers
+
 sudo -u apache vendor/bin/phpunit plugins/Helpers/tests/TestCase/View/Helper/PaginatorHelperTest
 ```
 
 ### Code quality
 ```bash
-sudo bash -c "( rm logs/*.log ; rm -r logs/quality ; rm tmp/cache/models/myapp* ; rm tmp/cache/persistent/myapp* )"
+sudo bash -c "( rm logs/*.log ; rm -r logs/quality ; rm tmp/cache/models/myapp* ; rm tmp/cache/persistent/myapp* )" ; \
 sudo -u apache ant quality -f plugins/Helpers/vendor/Jenkins/build.xml
 ```
 

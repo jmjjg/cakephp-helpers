@@ -7,6 +7,7 @@
  */
 namespace Helpers\Test\TestCase\View\Helper;
 
+use Cake\I18n\Time;
 use Cake\Network\Request;
 use Cake\Network\Session;
 use Cake\ORM\TableRegistry;
@@ -27,6 +28,7 @@ class ResultHelperTest extends TestCase
      */
     public $fixtures = [
         'core.Groups',
+        'core.Users',
         'core.Uuiditems'
     ];
 
@@ -39,6 +41,7 @@ class ResultHelperTest extends TestCase
     {
         parent::setUp();
         $this->Groups = TableRegistry::get('Groups');
+        $this->Users = TableRegistry::get('Users');
         $this->Uuiditems = TableRegistry::get('Uuiditems');
 
         $this->View = new View();
@@ -77,6 +80,15 @@ class ResultHelperTest extends TestCase
         $expected = 'string';
         $this->assertEquals($expected, $result);
 
+        // ---------------------------------------------------------------------
+
+        $user = $this->Users->get(1);
+        $result = $this->Result->type($user, 'created');
+        $expected = 'timestamp';
+        $this->assertEquals($expected, $result);
+
+        // ---------------------------------------------------------------------
+
         $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->type($uuiditem, 'published');
@@ -110,6 +122,15 @@ class ResultHelperTest extends TestCase
         $expected = 'foo';
         $this->assertEquals($expected, $result);
 
+        // ---------------------------------------------------------------------
+
+        $user = $this->Users->get(1);
+        $result = $this->Result->value($user, 'created');
+        $expected = '17/03/2007 01:16';
+        $this->assertEquals($expected, $result);
+
+        // ---------------------------------------------------------------------
+
         $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 
         $result = $this->Result->value($uuiditem, 'published');
@@ -124,6 +145,7 @@ class ResultHelperTest extends TestCase
      * @covers Helpers\View\Helper\ResultHelper::_booleanExtra
      * @covers Helpers\View\Helper\ResultHelper::_integerExtra
      * @covers Helpers\View\Helper\ResultHelper::_stringExtra
+     * @covers Helpers\View\Helper\ResultHelper::_timestampExtra
      * @return void
      */
     public function testExtra()
@@ -152,6 +174,27 @@ class ResultHelperTest extends TestCase
         $result = $this->Result->extra($group, 'title');
         $expected = 'empty';
         $this->assertEquals($expected, $result);
+
+        // ---------------------------------------------------------------------
+
+        $user = $this->Users->get(1);
+
+        $user->created = Time::yesterday();
+        $result = $this->Result->extra($user, 'created');
+        $expected = 'past';
+        $this->assertEquals($expected, $result);
+
+        $user->created = Time::tomorrow();
+        $result = $this->Result->extra($user, 'created');
+        $expected = 'future';
+        $this->assertEquals($expected, $result);
+
+        $user->created = Time::now();
+        $result = $this->Result->extra($user, 'created');
+        $expected = 'today';
+        $this->assertEquals($expected, $result);
+
+        // ---------------------------------------------------------------------
 
         $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
 

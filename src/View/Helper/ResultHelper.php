@@ -7,6 +7,7 @@
  */
 namespace Helpers\View\Helper;
 
+use Cake\I18n\Time;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -158,6 +159,29 @@ class ResultHelper extends Helper
     }
 
     /**
+     * Returns extra class(es) for a given timestamp value.
+     *
+     * @param bool $value The given value
+     * @return string
+     */
+    protected function _timestampExtra($value)
+    {
+        $extra = [];
+        $today = Time::today();
+        $tomorrow = Time::tomorrow();
+
+        if ($value < $today) {
+            $extra[] = 'past';
+        } elseif ($value >= $today && $value < $tomorrow) {
+            $extra[] = 'today';
+        } else {
+            $extra[] = 'future';
+        }
+
+        return $extra;
+    }
+
+    /**
      * Returns extra classes from the result entity by a given path.
      *
      * @todo classes (data type null|true|false|positive|negative|future|past|today)
@@ -177,16 +201,9 @@ class ResultHelper extends Helper
         if ($value === null) {
             $extra[] = 'null';
         } else {
-            switch ($type) {
-                case 'boolean':
-                    $extra = array_merge($extra, $this->_booleanExtra($value));
-                    break;
-                case 'integer':
-                    $extra = array_merge($extra, $this->_integerExtra($value));
-                    break;
-                case 'string':
-                    $extra = array_merge($extra, $this->_stringExtra($value));
-                    break;
+            $method = "_{$type}Extra";
+            if (method_exists($this, $method)) {
+                $extra = array_merge($extra, $this->{$method}($value));
             }
         }
 
