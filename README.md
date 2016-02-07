@@ -43,6 +43,11 @@ sudo -u apache vendor/bin/phpunit plugins/Helpers/tests/TestCase/View/Helper/Pag
 ```bash
 sudo bash -c "( rm logs/*.log ; rm -r logs/quality ; rm tmp/cache/models/myapp* ; rm tmp/cache/persistent/myapp* )" ; \
 sudo -u apache ant quality -f plugins/Helpers/vendor/Jenkins/build.xml
+
+wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+
+java -jar jenkins-cli.jar -s http://localhost:8080/ create-job "CakePHP 3 plugin Helpers" < plugins/Helpers/vendor/Jenkins/jobs/CakePHP3-Helpers-Plugin.xml
+java -jar jenkins-cli.jar -s http://localhost:8080/ create-job "CakePHP 3 plugin Helpers Quality" < plugins/Helpers/vendor/Jenkins/jobs/CakePHP3-Helpers-Plugin-Quality.xml
 ```
 
 ## Credits
