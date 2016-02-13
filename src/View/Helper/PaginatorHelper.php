@@ -42,10 +42,8 @@ class PaginatorHelper extends CakePaginatorHelper
             $this->_defaultConfig['templates'],
             $this->_defaultTemplates
         );
-//debug(__FILE__);
-        // TODO: (test from) config file
+
         parent::__construct($View, $config);
-//        $this->config( 'templates', $this->_defaultConfig['templates'] );
     }
 
     /**
