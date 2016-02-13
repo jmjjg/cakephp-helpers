@@ -11,6 +11,7 @@ use Cake\Network\Request;
 use Cake\Network\Session;
 use Cake\TestSuite\TestCase;
 use Cake\View\View;
+use Helpers\Test\TestCase\View\Helper\CommonHelperTestTrait;
 use Helpers\View\Helper\PaginatorHelper;
 
 /**
@@ -18,6 +19,7 @@ use Helpers\View\Helper\PaginatorHelper;
  */
 class PaginatorHelperTest extends TestCase
 {
+    use CommonHelperTestTrait;
 
     /**
      * setUp method
@@ -34,34 +36,7 @@ class PaginatorHelperTest extends TestCase
 
         $this->Paginator = new PaginatorHelper($this->View);
         $this->Paginator->request = new Request();
-        $this->Paginator->request->addParams([
-            'paging' => [
-                'Articles' => [
-                    'page' => 1,
-                    'current' => 1,
-                    'count' => 1,
-                    'prevPage' => false,
-                    'nextPage' => false,
-                    'pageCount' => 1,
-                    'perPage' => 10,
-                    'sort' => null,
-                    'direction' => null,
-                    'limit' => null,
-                ],
-                'Groups' => [
-                    'page' => 2,
-                    'current' => 21,
-                    'count' => 56,
-                    'prevPage' => true,
-                    'nextPage' => true,
-                    'pageCount' => 5,
-                    'perPage' => 10,
-                    'sort' => null,
-                    'direction' => null,
-                    'limit' => null,
-                ]
-            ]
-        ]);
+        $this->addPaginationParams($this->Paginator->request);
     }
 
     /**
