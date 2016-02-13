@@ -184,8 +184,6 @@ class ResultHelper extends Helper
     /**
      * Returns extra classes from the result entity by a given path.
      *
-     * @todo classes (data type null|true|false|positive|negative|future|past|today)
-     *
      * @param Entity $result The entity to get the extra from
      * @param string $path The path to the etra
      * @param array $params Extra parameters, the "type" can can be used to force the type
