@@ -9,15 +9,17 @@ namespace Helpers\View\Helper;
 
 use Cake\ORM\Entity;
 use Cake\ORM\ResultSet;
-use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\Helper;
 use Cake\View\StringTemplateTrait;
+use Helpers\Utility\Hash;
 use Helpers\Utility\Url;
 
 /**
  * The Helpers.ResultsTableHelper makes displaying the results of find or paginate
  * fast, including links.
+ *
+ * @todo Cell types: input
  *
  * @see Helpers\View\Helper\ResultsSetHelper for sample usage.
  */
@@ -37,21 +39,14 @@ class ResultsTableHelper extends Helper
     const CELL_TYPE_DATA = 'data';
 
     /**
-     * Classic <a href /> GET link
-     */
-    const LINK_TYPE_GET = 'href';
-
-    /**
-     * Looks like a link but is a mini POST form
-     */
-    const LINK_TYPE_POST = 'post';
-
-    /**
      * Helpers used by this helper
      *
      * @var array
      */
     public $helpers = [
+        'Action' => [
+            'className' => 'Helpers.Action'
+        ],
         'Form',
         'Html',
         'Paginator' => [
@@ -81,20 +76,6 @@ class ResultsTableHelper extends Helper
             "tbodyLinkCell" => "<td class=\"action {{extra}}\">{{link}}</td>\n"
         ]
     ];
-
-    /**
-     * Params to be merged by the _params() method, using keys.
-     *
-     * @var array
-     */
-    /*protected $_paramsDefaults = [
-        'tbodyLinkCell' => [
-            'extra' => true,
-            'title' => true,
-            'confirm' => false,
-            'type' => self::LINK_TYPE_GET
-        ]
-    ];*/
 
     /**
      * Returns an array of actions that are only at the end of the paths.
@@ -139,7 +120,6 @@ class ResultsTableHelper extends Helper
         }
 
         //INFO: actions uniquement à la fin
-        //TODO: URL, classes
         $actions = $this->_actionCells($paths);
         if (count($actions) > 0) {
             $theadCells .= $this->templater()->format(
@@ -166,49 +146,22 @@ class ResultsTableHelper extends Helper
      */
     public function tbodyDataCell(Entity $result, $path, array $params = [])
     {
-        $addExtra = false === isset($params['extra']) || !empty($params['extra']);
+        $params += ['extra' => true];
+        $extra = Hash::consume($params, 'extra');
 
         return $this->templater()->format(
             'tbodyDataCell',
             [
                 'data' => h($this->Result->value($result, $path, $params)),
                 'type' => $this->Result->type($result, $path, $params),
-                'extra' => $addExtra ? $this->Result->extra($result, $path, $params) : null
+                'extra' => $extra === true ? $this->Result->extra($result, $path, $params) : null
             ]
         );
     }
 
     /**
-     * Utility function to translate a string with values from the entity using
-     * the templater.
-     *
-     * @param Entity $result An Entity result
-     * @param string $string The string to translate
-     * @return string
-     */
-    protected function _translate(Entity $result, $string)
-    {
-        $this->templater()->remove('_link');
-        $this->templater()->add(['_link' => $string]);
-        return $this->templater()->format('_link', $result->toArray());
-        //$this->templater()->remove('_link');
-    }
-
-    /**
-     * Returns params + defaults in _paramsDefaults using key.
-     *
-     * @param string $key The key for default params
-     * @param array $params The params to complete
-     * @return array
-     */
-    /*protected function _params($key, array $params = [])
-    {
-        return $params + (array)$this->_paramsDefaults[$key];
-    }*/
-
-    /**
-     * Returns a "td" cell containing a link (heither LINK_TYPE_GET or
-     * LINK_TYPE_POST) with the translated path as maybe a parsable CakePHP URL.
+     * Returns a "td" cell containing a link (provided by ActionHelper::link)
+     * with the translated path as maybe a parsable CakePHP URL.
      *
      * @param Entity $result An Entity result
      * @param string $path A cell path
@@ -218,63 +171,16 @@ class ResultsTableHelper extends Helper
      */
     public function tbodyLinkCell(Entity $result, $path, array $params = [])
     {
-//        debug($this->_params(__FUNCTION__, $params));
-        // TODO: pre process, + headers
-        /* /* @todo <th class="actions"><?= __('Actions') ?></th> + */
-        /* <td class="actions">
-          <?= $this->Html->link(__('View'), ['action' => 'view', $result->id]) ?>
-          <?= $this->Html->link(__('Edit'), ['action' => 'edit', $result->id]) ?>
-          <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $result->id], ['confirm' => __('Are you sure you want to delete # {0}?', $result->id)]) ?>
-          </td> */
-// TODO: cache ?
-        $url = Url::parse($this->_translate($result, $path)); // TODO: or $params['url'] + translate ? / method params ?
+        $params = $this->Action->params($result, $path, $params);
 
-        if (is_array($url)) {
-            if (!isset($params['title']) || in_array($params['title'], [true, null], true)) {
-                $params['title'] = __(
-                    sprintf(
-                        '%s %s « {{name}} » (#{{id}})',
-                        Inflector::humanize($url['action']),
-                        mb_convert_case(Inflector::classify($url['controller']), MB_CASE_LOWER)
-                    )
-                );
-            }
-
-            if (isset($params['confirm']) && in_array($params['confirm'], [true, null], true)) {
-                $params['confirm'] = __(
-                    sprintf(
-                        'Are you sure you want to %s the %s « {{name}} » (#{{id}})',
-                        mb_convert_case(Inflector::humanize($url['action']), MB_CASE_LOWER),
-                        mb_convert_case(Inflector::humanize(Inflector::singularize($url['controller'])), MB_CASE_LOWER)
-                    )
-                );
-            }
-
-            $text = __(Inflector::camelize($url['action']));
-        } else {
-            $text = $url;
-            if (strpos($text, 'mailto:') === 0) {
-                $text = substr($text, 7);
-            }
-        }
-
-        $type = Hash::get($params, 'type') === self::LINK_TYPE_POST ? self::LINK_TYPE_POST : self::LINK_TYPE_GET;
-        unset($params['type']);
-
-        foreach (['confirm', 'title'] as $key) {
-            if (isset($params[$key])) {
-                $params[$key] = $this->_translate($result, $params[$key]);
-            }
-        }
-
-        $addExtra = false === isset($params['extra']) || !empty($params['extra']);
+        $foo = Hash::filterByKeys($params, ['text', 'url', 'type', 'extra']);
 
         return $this->templater()->format(
             'tbodyLinkCell',
             [
-                'link' => $type === self::LINK_TYPE_POST ? $this->Form->postLink($text, $url, $params) : $this->Html->link($text, $url, $params),
-                'type' => $type,
-                'extra' => $addExtra && is_array($url) ? Inflector::underscore("{$url['plugin']} {$url['controller']} {$url['action']}") : null
+                'link' => $this->Action->link($params),
+                'type' => $foo['type'],
+                'extra' => $foo['extra'] === true && is_array($foo['url']) ? Inflector::underscore("{$foo['url']['plugin']} {$foo['url']['controller']} {$foo['url']['action']}") : null
             ]
         );
     }
@@ -288,11 +194,10 @@ class ResultsTableHelper extends Helper
      */
     protected function _cellType($path)
     {
-        // TODO input cell
         // Link cell
         if (strpos($path, '/') === 0 || preg_match('/^(mailto|(ht|f)tps{0,1}):/', $path)) {
             return self::CELL_TYPE_LINK;
-            // Data cell
+        // Data cell
         } else {
             return self::CELL_TYPE_DATA;
         }

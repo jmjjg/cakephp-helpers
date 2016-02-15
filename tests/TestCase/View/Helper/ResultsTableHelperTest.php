@@ -70,10 +70,6 @@ class ResultsTableHelperTest extends TestCase
      * @covers Helpers\View\Helper\ResultsTableHelper::table
      * @covers Helpers\View\Helper\ResultsTableHelper::tbody
      * @covers Helpers\View\Helper\ResultsTableHelper::tbodyCell
-     * @covers Helpers\View\Helper\ResultsTableHelper::_cellType
-     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyLinkCell
-     * @covers Helpers\View\Helper\ResultsTableHelper::_translate
-     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyDataCell
      * @covers Helpers\View\Helper\ResultsTableHelper::thead
      * @covers Helpers\View\Helper\ResultsTableHelper::_actionCells
      * @return void
@@ -104,11 +100,6 @@ class ResultsTableHelperTest extends TestCase
      *
      * @covers Helpers\View\Helper\ResultsTableHelper::table
      * @covers Helpers\View\Helper\ResultsTableHelper::tbody
-     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyCell
-     * @covers Helpers\View\Helper\ResultsTableHelper::_cellType
-     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyLinkCell
-     * @covers Helpers\View\Helper\ResultsTableHelper::_translate
-     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyDataCell
      * @covers Helpers\View\Helper\ResultsTableHelper::thead
      * @covers Helpers\View\Helper\ResultsTableHelper::_actionCells
      * @return void
@@ -148,5 +139,76 @@ class ResultsTableHelperTest extends TestCase
 </tr></tbody></table>';
         $result = preg_replace('/post_[^"\.]+/m', 'post_0000000000000000000000', $result);
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Tests the tbodyCell method for the different cell types.
+     *
+     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyCell
+     * @covers Helpers\View\Helper\ResultsTableHelper::_cellType
+     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyLinkCell
+     * @covers Helpers\View\Helper\ResultsTableHelper::tbodyDataCell
+     */
+    public function testTbodyCell()
+    {
+        // Group
+        $group = $this->Groups->get(1);
+
+        // 1. Integer
+        // 1.1 Positive integer
+        $this->assertEquals(
+            "<td class=\"data integer positive\">1</td>\n",
+            $this->ResultsTable->tbodyCell($group, 'id')
+        );
+
+        // 1.2 Negative integer
+        $group->id = -1;
+        $this->assertEquals(
+            "<td class=\"data integer negative\">-1</td>\n",
+            $this->ResultsTable->tbodyCell($group, 'id')
+        );
+
+        // 1.3 Zero
+        $group->id = 0;
+        $this->assertEquals(
+            "<td class=\"data integer zero\">0</td>\n",
+            $this->ResultsTable->tbodyCell($group, 'id')
+        );
+
+        // 2. String
+        // 2.1 Normal string
+        $this->assertEquals(
+            "<td class=\"data string \">foo</td>\n",
+            $this->ResultsTable->tbodyCell($group, 'title')
+        );
+
+        // 2.2 Empty string
+        $group->title = '';
+        $this->assertEquals(
+            "<td class=\"data string empty\"></td>\n",
+            $this->ResultsTable->tbodyCell($group, 'title')
+        );
+
+        // Uuiditem
+        $uuiditem = $this->Uuiditems->get('481fc6d0-b920-43e0-a40d-6d1740cf8569');
+
+        // 3. Uuid
+        $this->assertEquals(
+            "<td class=\"data uuid \">481fc6d0-b920-43e0-a40d-6d1740cf8569</td>\n",
+            $this->ResultsTable->tbodyCell($uuiditem, 'id')
+        );
+
+        // 4. Boolean
+        // 4.1 Boolean false
+        $this->assertEquals(
+            "<td class=\"data boolean false\"></td>\n",
+            $this->ResultsTable->tbodyCell($uuiditem, 'published')
+        );
+
+        // 5. Link
+        $this->assertEquals(
+            "<td class=\"action  uuiditems view\"><a href=\"/uuiditems/view/481fc6d0-b920-43e0-a40d-6d1740cf8569\" title=\"View uuiditem « Item 1 » (#481fc6d0-b920-43e0-a40d-6d1740cf8569)\">View</a></td>\n",
+            $this->ResultsTable->tbodyCell($uuiditem, '/Uuiditems/view/{{id}}')
+        );
     }
 }
