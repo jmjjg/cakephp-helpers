@@ -8,7 +8,6 @@
 namespace Helpers\Utility;
 
 use Cake\Routing\Router;
-use Cake\Utility\Hash;
 
 /**
  * Utility class used for URL parsing.
@@ -42,7 +41,7 @@ abstract class Url
 
             $result = Router::parse($url);
 
-            $pass = (array)Hash::get($result, 'pass');
+            $pass = (array)\Cake\Utility\Hash::get($result, 'pass');
             unset($result['pass']);
 
             $result = $result + $pass;
