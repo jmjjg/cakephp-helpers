@@ -24,10 +24,7 @@ class ActionHelperTest extends TestCase
      *
      * @var array
      */
-    public $fixtures = [
-        'core.Groups',
-        'core.Uuiditems'
-    ];
+    public $fixtures = [ 'core.Uuiditems'];
 
     /**
      * setUp method
@@ -37,7 +34,6 @@ class ActionHelperTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->Groups = TableRegistry::get('Groups');
         $this->Uuiditems = TableRegistry::get('Uuiditems');
 
         $this->View = new View();
@@ -55,7 +51,50 @@ class ActionHelperTest extends TestCase
     public function tearDown()
     {
         parent::tearDown();
-        unset($this->Action, $this->View, $this->Uuiditems, $this->Groups);
+        unset($this->Action, $this->View, $this->Uuiditems);
+    }
+
+    /**
+     * Tests the title method
+     *
+     * @covers Helpers\View\Helper\ActionHelper::title
+     */
+    public function testTitle()
+    {
+        $this->assertEquals(
+            'View group « {{name}} » (#{{id}})',
+            $this->Action->title('Groups', 'view')
+        );
+    }
+
+    /**
+     * Tests the title method
+     *
+     * @covers Helpers\View\Helper\ActionHelper::confirm
+     */
+    public function testConfirm()
+    {
+        $this->assertEquals(
+            'Are you sure you want to delete the group « {{name}} » (#{{id}})',
+            $this->Action->confirm('Groups', 'delete')
+        );
+    }
+
+    /**
+     * Tests the text method
+     *
+     * @covers Helpers\View\Helper\ActionHelper::text
+     */
+    public function testText()
+    {
+        $this->assertEquals('View', $this->Action->text(['url' => ['controller' => 'Groups', 'action' => 'view', 1]]));
+        $this->assertEquals('Details', $this->Action->text(['url' => ['controller' => 'Groups', 'action' => 'view', 1], 'text' => 'Details']));
+
+        $this->assertEquals('john.doe@example.com', $this->Action->text(['url' => 'mailto:john.doe@example.com']));
+        $this->assertEquals('John Doe', $this->Action->text(['url' => 'mailto:john.doe@example.com', 'text' => 'John Doe']));
+
+        $this->assertEquals('http://www.example.com/', $this->Action->text(['url' => 'http://www.example.com/']));
+        $this->assertEquals('Example', $this->Action->text(['url' => 'http://www.example.com/', 'text' => 'Example']));
     }
 
     /**
@@ -63,9 +102,6 @@ class ActionHelperTest extends TestCase
      *
      * @covers Helpers\View\Helper\ActionHelper::link
      * @covers Helpers\View\Helper\ActionHelper::params
-     * @covers Helpers\View\Helper\ActionHelper::title
-     * @covers Helpers\View\Helper\ActionHelper::confirm
-     * @covers Helpers\View\Helper\ActionHelper::text
      * @covers Helpers\View\Helper\ActionHelper::_translate
      */
     public function testParamsLink()

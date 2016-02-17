@@ -58,6 +58,16 @@ class ActionHelper extends Helper
     ];
 
     /**
+     * Live cache for the title and confirm methods.
+     *
+     * @var array
+     */
+    protected $_cache = [
+        'title' => [],
+        'confirm' => []
+    ];
+
+    /**
      * Utility function to translate a string with values from the entity using
      * the templater.
      *
@@ -80,11 +90,11 @@ class ActionHelper extends Helper
      */
     public function link(array $params)
     {
-        $foo = Hash::consume($params, ['text', 'url', 'type', 'extra']);
+        $local = Hash::consume($params, ['text', 'url', 'type', 'extra']);
 
-        return $foo['type'] === self::LINK_TYPE_POST
-            ? $this->Form->postLink($foo['text'], $foo['url'], $params)
-            : $this->Html->link($foo['text'], $foo['url'], $params);
+        return $local['type'] === self::LINK_TYPE_POST
+            ? $this->Form->postLink($local['text'], $local['url'], $params)
+            : $this->Html->link($local['text'], $local['url'], $params);
     }
 
     /**
@@ -96,13 +106,19 @@ class ActionHelper extends Helper
      */
     public function title($controller, $action)
     {
-        return __(
-            sprintf(
-                '%s %s « {{name}} » (#{{id}})',
-                Inflector::humanize($action),
-                mb_convert_case(Inflector::classify($controller), MB_CASE_LOWER)
-            )
-        );
+        $key = "{$controller}.{$action}";
+
+        if (!isset($this->_cache[__FUNCTION__][$key])) {
+            $this->_cache[__FUNCTION__][$key] = __(
+                sprintf(
+                    '%s %s « {{name}} » (#{{id}})',
+                    Inflector::humanize($action),
+                    mb_convert_case(Inflector::classify($controller), MB_CASE_LOWER)
+                )
+            );
+        }
+
+        return $this->_cache[__FUNCTION__][$key];
     }
 
     /**
@@ -114,13 +130,19 @@ class ActionHelper extends Helper
      */
     public function confirm($controller, $action)
     {
-        return __(
-            sprintf(
-                'Are you sure you want to %s the %s « {{name}} » (#{{id}})',
-                mb_convert_case(Inflector::humanize($action), MB_CASE_LOWER),
-                mb_convert_case(Inflector::humanize(Inflector::singularize($controller)), MB_CASE_LOWER)
-            )
-        );
+        $key = "{$controller}.{$action}";
+
+        if (!isset($this->_cache[__FUNCTION__][$key])) {
+            $this->_cache[__FUNCTION__][$key] = __(
+                sprintf(
+                    'Are you sure you want to %s the %s « {{name}} » (#{{id}})',
+                    mb_convert_case(Inflector::humanize($action), MB_CASE_LOWER),
+                    mb_convert_case(Inflector::humanize(Inflector::singularize($controller)), MB_CASE_LOWER)
+                )
+            );
+        }
+
+        return $this->_cache[__FUNCTION__][$key];
     }
 
     /**
@@ -131,12 +153,16 @@ class ActionHelper extends Helper
      */
     public function text(array $params)
     {
-        if (is_array($params['url'])) {
-            $text = isset($params['text']) ? $params['text'] : __(Inflector::camelize($params['url']['action']));
+        if (isset($params['text'])) {
+            $text = $params['text'];
         } else {
-            $text = $params['url'];
-            if (strpos($text, 'mailto:') === 0) {
-                $text = substr($text, 7);
+            if (is_array($params['url'])) {
+                $text = __(Inflector::camelize($params['url']['action']));
+            } else {
+                $text = $params['url'];
+                if (strpos($text, 'mailto:') === 0) {
+                    $text = substr($text, 7);
+                }
             }
         }
 
