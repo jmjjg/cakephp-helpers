@@ -7,13 +7,11 @@
  */
 namespace Helpers\View\Helper;
 
-use Cake\ORM\Entity;
 use Cake\ORM\ResultSet;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\Helper;
 use Cake\View\StringTemplateTrait;
-use Helpers\Utility\Url;
 
 /**
  * Sample usage:
@@ -101,8 +99,27 @@ class ResultsSetHelper extends Helper
             'paginationCounter' => '<p>{{counter}}</p>',
             'paginationLinks' => '<ul class="pagination">{{first}}{{prev}}{{numbers}}{{next}}{{last}}</ul>',
             'pagination' => '<div class="paginator">{{counter}}{{links}}</div>'
+        ],
+        'messages' => [
+            'empty' => 'No record was found',
+            'first' => '<< first',
+            'previous' => '< previous',
+            'next' => 'next >',
+            'last' => 'last >>'
         ]
     ];
+
+    /**
+     * Utility method to get the template by name.
+     *
+     * @param string $template The name of the template
+     * @param array $data The optional data to send to the templater
+     * @return string
+     */
+    protected function _template($template, array $data = [])
+    {
+        return $this->templater()->format($template, $data);
+    }
 
     /**
      * Returns an <index> containing a <table>, <pagination> and the <model> name
@@ -116,23 +133,18 @@ class ResultsSetHelper extends Helper
     public function index(ResultSet $results, array $paths, array $params = [])
     {
         if (count($results) > 0) {
-            $index = $this->templater()->format(
-                'index',
-                [
-                    'table' => $this->ResultsTable->table($results, $paths),
-                    'pagination' => $this->pagination(),
-                    'model' => Inflector::underscore($this->Paginator->defaultModel())
-                ]
-            );
+            $indexData = [
+                'table' => $this->ResultsTable->table($results, $paths),
+                'pagination' => $this->pagination(),
+                'model' => Inflector::underscore($this->Paginator->defaultModel())
+            ];
+            $index = $this->_template('index', $indexData);
         } else {
-            // TODO: i18n (domain, function) + attribute
-            $message = __(Hash::get($params, 'message'));
-            $index = $this->templater()->format(
-                'empty',
-                [
-                    'message' => $message !== null ? $message : 'No record was found'
-                ]
-            );
+            $message = Hash::get($params, 'message');
+            $indexData = [
+                'message' => null !== $message ? $message : $this->config('messages.empty')
+            ];
+            $index = $this->_template('empty', $indexData);
         }
 
         return $index;
@@ -153,25 +165,19 @@ class ResultsSetHelper extends Helper
      */
     public function pagination(array $options = [])
     {
-        $counter = $this->templater()->format('paginationCounter', ['counter' => $this->Paginator->counter()]);
-        $links = $this->templater()->format(
-            'paginationLinks',
-            [
-                // TODO: i18n + attribute
-                'first' => $this->Paginator->first(__('<< first'), $options),
-                'prev' => $this->Paginator->prev(__('< previous'), $options),
-                'numbers' => $this->Paginator->numbers($options),
-                'next' => $this->Paginator->next(__('next >'), $options),
-                'last' => $this->Paginator->last(__('last >>'), $options)
-            ]
-        );
+        $paginationLinksData = [
+            'first' => $this->Paginator->first($this->config('messages.first'), $options),
+            'prev' => $this->Paginator->prev($this->config('messages.previous'), $options),
+            'numbers' => $this->Paginator->numbers($options),
+            'next' => $this->Paginator->next($this->config('messages.next'), $options),
+            'last' => $this->Paginator->last($this->config('messages.last'), $options)
+        ];
+        $links = $this->_template('paginationLinks', $paginationLinksData);
 
-        return $this->templater()->format(
-            'pagination',
-            [
-                'counter' => $counter,
-                'links' => $links
-            ]
-        );
+        $paginationData = [
+            'counter' => $this->_template('paginationCounter', ['counter' => $this->Paginator->counter()]),
+            'links' => $links
+        ];
+        return $this->_template('pagination', $paginationData);
     }
 }
