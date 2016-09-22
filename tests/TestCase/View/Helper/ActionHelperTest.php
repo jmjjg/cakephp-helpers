@@ -102,7 +102,7 @@ class ActionHelperTest extends TestCase
      *
      * @covers Helpers\View\Helper\ActionHelper::link
      * @covers Helpers\View\Helper\ActionHelper::params
-     * @covers Helpers\View\Helper\ActionHelper::_translate
+     * @covers Helpers\View\Helper\ActionHelper::_format
      */
     public function testParamsLink()
     {

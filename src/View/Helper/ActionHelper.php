@@ -68,14 +68,14 @@ class ActionHelper extends Helper
     ];
 
     /**
-     * Utility function to translate a string with values from the entity using
+     * Utility function to format a string with values from the entity using
      * the templater.
      *
      * @param Entity $result An Entity result
      * @param string $string The string to translate
      * @return string
      */
-    protected function _translate(Entity $result, $string)
+    protected function _format(Entity $result, $string)
     {
         $this->templater()->remove('_link');
         $this->templater()->add(['_link' => $string]);
@@ -99,6 +99,8 @@ class ActionHelper extends Helper
 
     /**
      * Returns the default title msgid for a given controller and action pair.
+     *
+     * @todo Remove because unnecessary: use a custom class to provide translation
      *
      * @param string $controller The name of the controller
      * @param string $action The name of the action
@@ -124,6 +126,8 @@ class ActionHelper extends Helper
     /**
      * Returns the default confirm msgid for a given controller and action pair.
      *
+     * @todo Remove because unnecessary: use a custom class to provide translation
+     *
      * @param string $controller The name of the controller
      * @param string $action The name of the action
      * @return string
@@ -147,6 +151,8 @@ class ActionHelper extends Helper
 
     /**
      * Returns the link text for the given parameters.
+     *
+     * @fixme ? Remove because unnecessary: use a custom class to provide translation
      *
      * @param array $params The params; used keys are text and url
      * @return string
@@ -183,7 +189,7 @@ class ActionHelper extends Helper
         $params += $this->_defaults;
 
         $params['url'] = in_array($params['url'], [true, null], true)
-            ? Url::parse($this->_translate($result, $path))
+            ? Url::parse($this->_format($result, $path))
             : $params['url'];
 
         if (is_array($params['url'])) {
@@ -202,7 +208,7 @@ class ActionHelper extends Helper
 
         foreach (['confirm', 'title'] as $key) {
             if (isset($params[$key])) {
-                $params[$key] = $this->_translate($result, $params[$key]);
+                $params[$key] = $this->_format($result, $params[$key]);
             }
         }
 
