@@ -16,6 +16,7 @@ use Cake\View\StringTemplateTrait;
 /**
  * Sample usage:
  * $this->Html->css('Helpers.extra', ['block' => true]);
+ *
  * echo $this->ResultsSet->index(
  *     $groups,
  *     [
@@ -101,10 +102,11 @@ class ResultsSetHelper extends Helper
             'pagination' => '<div class="paginator">{{counter}}{{links}}</div>'
         ],
         'messages' => [
+            'counter' => 'Page {{page}} out of {{pages}}, showing {{current}} records out of {{count}}',
             'empty' => 'No record was found',
             'first' => '<< first',
-            'previous' => '< previous',
-            'next' => 'next >',
+            'prev' => '<< Previous',
+            'next' => 'Next >>',
             'last' => 'last >>'
         ]
     ];
@@ -167,15 +169,17 @@ class ResultsSetHelper extends Helper
     {
         $paginationLinksData = [
             'first' => $this->Paginator->first($this->config('messages.first'), $options),
-            'prev' => $this->Paginator->prev($this->config('messages.previous'), $options),
+            'prev' => $this->Paginator->prev($this->config('messages.prev'), $options),
             'numbers' => $this->Paginator->numbers($options),
             'next' => $this->Paginator->next($this->config('messages.next'), $options),
             'last' => $this->Paginator->last($this->config('messages.last'), $options)
         ];
         $links = $this->_template('paginationLinks', $paginationLinksData);
 
+        $counter = $this->Paginator->counter(['format' => $this->config('messages.counter')]);
+
         $paginationData = [
-            'counter' => $this->_template('paginationCounter', ['counter' => $this->Paginator->counter()]),
+            'counter' => $this->_template('paginationCounter', ['counter' => $counter]),
             'links' => $links
         ];
         return $this->_template('pagination', $paginationData);
